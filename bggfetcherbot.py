@@ -32,6 +32,7 @@ while True:
             if game_names and comment.author.name != "BGGFetcherBot":
                 reply_text = ""
                 for game_name in game_names:
+                    game_name = game_name.replace('*', '')
                     closest_match = process.extractOne(game_name, game_data['game_title'],
                                                        scorer=fuzz.token_sort_ratio)
                     if closest_match[1] < 80:
