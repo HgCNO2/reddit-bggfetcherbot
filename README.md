@@ -2,6 +2,9 @@
 u/BGGFetcherBot is designed to reply to comments in r/boardgames if the comment includes game names in double brackets with links to the game on BoardGameGeek.com
 
 ## Changelog
+### v0.2.0
+Added pre-filtering before fuzzy matching to attempt to find verbatim matches earlier to ensure higher quality matches.
+
 ### v0.1.1
 Correcting game names that might be in bold.
 

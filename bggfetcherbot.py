@@ -32,12 +32,25 @@ while True:
             if game_names and comment.author.name != "BGGFetcherBot":
                 reply_text = ""
                 for game_name in game_names:
-                    game_name = game_name.replace('*', '')
-                    closest_match = process.extractOne(game_name, game_data['game_title'],
-                                                       scorer=fuzz.token_sort_ratio)
-                    if closest_match[1] < 80:
+                    possible_matches = game_data[game_data['game_title'].str.contains(game_name, regex=True,
+                                                                                      flags=re.I)]['game_title']
+                    if possible_matches.empty:
+                        query = '(' + game_name.replace('*', '') + ')'
+                        query = '|'.join(query.split(' '))
+                        possible_matches = game_data[game_data['game_title'].str.contains(query, flags=re.I, regex=True
+                                                                                          )]['game_title']
+                    if not possible_matches.empty:
+                        closest_match = process.extractOne(game_name, possible_matches,
+                                                           scorer=fuzz.token_sort_ratio)
+                        if closest_match[1] < 80:
+                            closest_match = process.extractOne(game_name, possible_matches,
+                                                               scorer=fuzz.token_set_ratio)
+                    else:
                         closest_match = process.extractOne(game_name, game_data['game_title'],
-                                                           scorer=fuzz.token_set_ratio)
+                                                           scorer=fuzz.token_sort_ratio)
+                        if closest_match[1] < 80:
+                            closest_match = process.extractOne(game_name, game_data['game_title'],
+                                                               scorer=fuzz.token_set_ratio)
                     game_link = game_data[game_data['game_title'] == closest_match[0]]['url'].values[0]
                     reply_text += f"[{game_name}]({game_link})\n\n"
                 reply_text += '^^[[gamename]] ^^to ^^call'
