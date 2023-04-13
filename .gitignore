@@ -133,3 +133,6 @@ dmypy.json
 
 # Reddit Secrets
 *.json
+
+# Web drivers
+driver/
