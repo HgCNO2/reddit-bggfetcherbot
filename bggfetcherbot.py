@@ -31,7 +31,7 @@ game_data = pd.read_pickle('game_data.pickle.gz')
 date_loaded = datetime.date.today()
 
 # Set subreddit
-subreddit = reddit.subreddit("boardgames")
+subreddit = reddit.subreddit("boardgames+BGGFetcherBot")
 
 # Infinitely Loop comment stream
 while True:
