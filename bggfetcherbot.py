@@ -4,6 +4,14 @@ import time
 import json
 import pandas as pd
 from thefuzz import fuzz, process
+import datetime
+
+
+# Define logger
+def log_error(exception):
+    with open('bggfetcherbot.log', 'a') as log:
+        log.write(f'{datetime.datetime.now()}: {exception}\n\n')
+
 
 # Load authentication data
 with open('reddit_secrets.json') as f:
@@ -20,6 +28,7 @@ reddit = praw.Reddit(
 
 # Load game database
 game_data = pd.read_pickle('game_data.pickle.gz')
+date_loaded = datetime.date.today()
 
 # Set subreddit
 subreddit = reddit.subreddit("boardgames")
@@ -28,24 +37,32 @@ subreddit = reddit.subreddit("boardgames")
 while True:
     try:
         for comment in subreddit.stream.comments(skip_existing=True):
+            # Ensure data stays fresh
+            if (datetime.date.today() - date_loaded).days >= 7:
+                game_data = pd.read_pickle('game_data.pickle.gz')
+                date_loaded = datetime.date.today()
             game_names = re.findall(r'\[\[(.*?)\]\]', comment.body)
             if game_names and comment.author.name != "BGGFetcherBot":
                 reply_text = ""
                 for game_name in game_names:
+                    # Attempt to pull games that exactly match
                     possible_matches = game_data[game_data['game_title'].str.contains(game_name, regex=True,
                                                                                       flags=re.I)]['game_title']
                     if possible_matches.empty:
+                        # Attempt to pull all games that match any word in the call
                         query = '(' + game_name.replace('*', '') + ')'
                         query = '|'.join(query.split(' '))
                         possible_matches = game_data[game_data['game_title'].str.contains(query, flags=re.I, regex=True
                                                                                           )]['game_title']
                     if not possible_matches.empty:
+                        # Will run fuzzy matching on a small set of matches
                         closest_match = process.extractOne(game_name, possible_matches,
                                                            scorer=fuzz.token_sort_ratio)
                         if closest_match[1] < 80:
                             closest_match = process.extractOne(game_name, possible_matches,
                                                                scorer=fuzz.token_set_ratio)
                     else:
+                        # Will fuzzy match against the entire database
                         closest_match = process.extractOne(game_name, game_data['game_title'],
                                                            scorer=fuzz.token_sort_ratio)
                         if closest_match[1] < 80:
@@ -62,13 +79,13 @@ while True:
                 delay_seconds = int(delay_time.group(1)) * 60 + 10
             else:
                 delay_seconds = 10
-            print(f"Rate limited. Sleeping for {delay_seconds} seconds...")
+            log_error(e)
             time.sleep(delay_seconds)
         else:
             raise e
     except praw.exceptions.PRAWException as e:
-        print(f"PRAW error: {e}")
+        log_error(e)
         time.sleep(10)
     except Exception as e:
-        print(f"Error: {e}")
+        log_error(e)
         time.sleep(10)
