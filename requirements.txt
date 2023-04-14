@@ -7,3 +7,4 @@ lxml~=4.6.3
 beautifulsoup4~=4.9.3
 selenium~=4.8.3
 webdriver-manager~=3.8.5
+python-Levenshtein~=0.20.9
