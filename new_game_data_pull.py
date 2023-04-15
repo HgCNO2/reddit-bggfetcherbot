@@ -100,8 +100,9 @@ if not new_entries.empty:
         options.add_argument('--disable-application-cache')
         options.add_argument('--disable-gpu')
         options.add_argument("--disable-dev-shm-usage")
+        options.binary_location = r"firefox\firefox-bin"
         browser = webdriver.Firefox(options=options, service=FirefoxService(GeckoDriverManager(
-            path='.\\driver').install()))
+            path='driver').install()))
         df['game_details'] = df.apply(lambda row: retrieve_game_data(browser, row['url']), axis=1)
         df['game_title'] = df['game_details'].apply(lambda row: row[0])
         df['game_year'] = df['game_details'].apply(lambda row: row[1])
