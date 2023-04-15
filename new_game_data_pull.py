@@ -90,6 +90,7 @@ new_entries = pd.concat([live_urls, existing_table])\
 # crawl new_entries urls for title and year, push update to gzipped pickle file.
 if not new_entries.empty:
     entries_split = np.array_split(new_entries, math.ceil(len(new_entries) / 250))
+    firefox_service = FirefoxService(GeckoDriverManager(path='driver').install())
     for df in entries_split:
         options = Options()
         options.add_argument('-headless')
@@ -102,8 +103,7 @@ if not new_entries.empty:
         options.add_argument("--disable-dev-shm-usage")
         with open('binary.txt', 'r') as f:
             options.binary_location = f.read()
-        browser = webdriver.Firefox(options=options, service=FirefoxService(GeckoDriverManager(
-            path='driver').install()))
+        browser = webdriver.Firefox(options=options, service=firefox_service)
         df['game_details'] = df.apply(lambda row: retrieve_game_data(browser, row['url']), axis=1)
         df['game_title'] = df['game_details'].apply(lambda row: row[0])
         df['game_year'] = df['game_details'].apply(lambda row: row[1])
