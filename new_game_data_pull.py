@@ -104,8 +104,8 @@ if not new_entries.empty:
         options.add_argument('--disable-application-cache')
         options.add_argument('--disable-gpu')
         options.add_argument("--disable-dev-shm-usage")
-        with open('binary.txt', 'r') as f:
-            options.binary_location = f.read()
+        with open('binary.txt', 'r') as f:  # Comment out for local run
+            options.binary_location = f.read()  # Comment out for local run
         browser = webdriver.Firefox(options=options, service=firefox_service)
         df['game_details'] = df.apply(lambda row: retrieve_game_data(browser, row['url']), axis=1)
         df['game_title'] = df['game_details'].apply(lambda row: row[0])
