@@ -90,7 +90,10 @@ new_entries = pd.concat([live_urls, existing_table])\
 # crawl new_entries urls for title and year, push update to gzipped pickle file.
 if not new_entries.empty:
     entries_split = np.array_split(new_entries, math.ceil(len(new_entries) / 250))
-    firefox_service = FirefoxService(GeckoDriverManager(path='driver').install())
+    try:
+        firefox_service = FirefoxService(GeckoDriverManager(path='driver').install())
+    except ValueError:
+        firefox_service = FirefoxService(r'driver/geckodriver')
     for df in entries_split:
         options = Options()
         options.add_argument('-headless')
