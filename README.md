@@ -11,7 +11,7 @@ Added support for bold inside and outside brackets (Issue #3)
 
 Adding game match and year to response (Issue #4)
 
-Added escapes to all special regex characters to avoid catastrophic backtracking
+Added escapes to all special regex characters to avoid catastrophic backtracking (Issue #5)
 
 ### v0.3.1
 Added r/BGGFetcherBot to subreddit listener for testing.
