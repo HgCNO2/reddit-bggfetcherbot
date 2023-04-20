@@ -72,11 +72,11 @@ while True:
                             closest_match = process.extractOne(game_query, game_data['game_title'],
                                                                scorer=fuzz.token_set_ratio)
                     game_link = game_data[game_data['game_title'] == closest_match[0]]['url'].values[0]
-                    if game_data[game_data['game_title'] == closest_match[0]]['game_year'].values[0] == np.nan:
+                    game_year = game_data[game_data['game_title'] == closest_match[0]]['game_year'].values[0]
+                    if game_year == np.nan:
                         game_year = ''
                     else:
-                        game_year = f" (" \
-                                    f"{game_data[game_data['game_title'] == closest_match[0]]['game_year'].values[0]})"
+                        game_year = f" ({game_year})"
                     reply_text += f"[{game_name} -> {closest_match[0]}{game_year}]({game_link})\n\n"
                 reply_text += '^^[[gamename]] ^^to ^^call'
                 comment.reply(reply_text)
