@@ -42,8 +42,7 @@ date_loaded = datetime.date.today()
 # Set subreddit
 test_subreddit = 'BGGFetcherBot'
 subreddits = ['boardgames']
-# subreddit = reddit.subreddit("+".join(subreddits) + f'+{test_subreddit}')
-subreddit = reddit.subreddit(test_subreddit)
+subreddit = reddit.subreddit("+".join(subreddits) + f'+{test_subreddit}')
 
 # Compile Regex
 game_names_regex = re.compile(r'\\?\[\\?\[(.*?)\\?\]\\?\]')
