@@ -111,7 +111,7 @@ if not new_entries.empty:
         df['game_title'] = df['game_details'].apply(lambda row: row[0])
         df['game_year'] = df['game_details'].apply(lambda row: row[1])
         try:
-            df['game_year'] = df['game_year'].str.replace(r'\(|\)', '', regex=True)
+            df['game_year'] = df['game_year'].str.replace(r'\(|\)', '', regex=True).astype(float)
         except AttributeError:
             pass
         df.drop(columns='game_details', inplace=True)
