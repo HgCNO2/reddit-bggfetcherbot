@@ -46,6 +46,8 @@ subreddit = reddit.subreddit("+".join(subreddits) + f'+{test_subreddit}')
 
 # Compile Regex
 game_names_regex = re.compile(r'\\?\[\\?\[(.*?)\\?\]\\?\]')
+game_year_regex = re.compile(r'(.*)\\\|(\d{4})\\?([+-])?$')
+single_game_regex = re.compile(r'^(.*)\\\|')
 
 # Infinitely Loop comment stream
 while True:
@@ -61,6 +63,11 @@ while True:
                 for game_name in game_names:
                     # Strip extra whitespace & escape regex characters
                     game_query = re.escape(game_name.strip()).replace(r'\ ', ' ')
+                    # TODO Look for year in call & extract year and modifier
+                    if re.match(game_year_regex, game_query):
+                        year_query = float(re.match(game_year_regex, game_query).groups()[1])
+                        modifier = re.match(game_year_regex, game_query).groups()[2]
+                        game_query = re.match(single_game_regex, game_query).groups()[0].strip()
                     # Attempt to pull games that exactly match
                     possible_matches = game_data[game_data['game_title'].str.contains(game_query, regex=True,
                                                                                       flags=re.I)]['game_title']
@@ -83,7 +90,7 @@ while True:
                     else:
                         game_year = f" ({game_year})"
                     reply_text += f"[{game_name} -> {closest_match[0]}{game_year}]({game_link})\n\n"
-                reply_text += '^^[[gamename]] ^^to ^^call'
+                reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call'
                 comment.reply(reply_text)
     except praw.exceptions.APIException as e:
         if "RATELIMIT" in str(e):
