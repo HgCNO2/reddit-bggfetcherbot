@@ -85,10 +85,10 @@ while True:
                         closest_match = find_closest_match(game_query, game_data['game_title'])
                     game_link = game_data[game_data['game_title'] == closest_match[0]]['url'].values[0]
                     game_year = game_data[game_data['game_title'] == closest_match[0]]['game_year'].values[0]
-                    if game_year == np.nan:
-                        game_year = ''
-                    else:
-                        game_year = f" ({game_year})"
+                    try:
+                        game_year = f" ({int(game_year)})"
+                    except ValueError:
+                        game_year = ""
                     reply_text += f"[{game_name} -> {closest_match[0]}{game_year}]({game_link})\n\n"
                 reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call'
                 comment.reply(reply_text)
