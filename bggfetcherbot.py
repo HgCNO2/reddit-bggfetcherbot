@@ -5,7 +5,6 @@ import json
 import pandas as pd
 from thefuzz import fuzz, process
 import datetime
-import numpy as np
 
 
 # Define logger
