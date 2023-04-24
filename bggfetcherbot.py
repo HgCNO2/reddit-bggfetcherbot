@@ -76,10 +76,13 @@ while True:
                 for game_name in game_names:
                     # Strip extra whitespace & escape regex characters
                     game_query = re.escape(game_name.strip()).replace(r'\ ', ' ')
-                    # TODO Look for year in call & extract year and modifier
+                    year_query = None
+                    modifier = None
+                    # Look for year in call & extract year and modifier
                     if re.match(game_year_regex, game_query):
                         year_query = float(re.match(game_year_regex, game_query).groups()[1])
                         modifier = re.match(game_year_regex, game_query).groups()[2]
+                    if "|" in game_query:
                         game_query = re.match(single_game_regex, game_query).groups()[0].strip()
                     # Attempt to pull games that exactly match
                     possible_matches = find_possible_matches(game_query, game_data, year_query, modifier)
