@@ -22,6 +22,19 @@ def find_closest_match(query, dataset):
     return closest_match
 
 
+# Define lookup with years and modifiers
+def find_possible_matches(query: str, data_set: pd.DataFrame, year_query: float = None, modifier: str = None):
+    refined_data = data_set[data_set['game_title'].str.contains(query, regex=True, flags=re.I)]
+    if year_query and modifier:
+        if modifier == '+':
+            refined_data = refined_data[refined_data['game_year'] >= year_query]
+        elif modifier == '-':
+            refined_data = refined_data[refined_data['game_year'] <= year_query]
+    elif year_query and not modifier:
+        refined_data = refined_data[refined_data['game_year'] == year_query]
+    return refined_data['game_title']
+
+
 # Load authentication data
 with open('reddit_secrets.json') as f:
     secrets = json.load(f)
