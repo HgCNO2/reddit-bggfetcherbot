@@ -51,10 +51,12 @@ reddit = praw.Reddit(
 game_data = pd.read_pickle('game_data.pickle.gz')
 date_loaded = datetime.date.today()
 
-# Set subreddit
-test_subreddit = 'BGGFetcherBot'
-subreddits = ['boardgames']
-subreddit = reddit.subreddit("+".join(subreddits) + f'+{test_subreddit}')
+# Set subreddit for production
+subreddits = ['boardgames', 'soloboardgaming']
+subreddit = reddit.subreddit("+".join(subreddits))
+
+# Set subreddit for testing
+# subreddit = reddit.subreddit('BGGFetcherBot')
 
 # Compile Regex
 game_names_regex = re.compile(r'\\?\[\\?\[(.*?)\\?\]\\?\]')
