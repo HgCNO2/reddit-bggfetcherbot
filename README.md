@@ -8,6 +8,7 @@ Bot now able to parse year and modifiers added to call (Issue #7):
 	[[Everdell|2020]] will look for Everdell with release years of 2020.
 	[[Everdell|2020+]] will look for Everdell with release years of 2020 or later.
 	[[Everdell|2020-]] will look for Everdell with release years of 2020 or earlier.
+Bot being added to r/soloboardgaming
 ### v0.5.0
 Unescaped the spaces in the query for possible matches (Issue #9)
 
