@@ -116,5 +116,6 @@ if not new_entries.empty:
             pass
         df.drop(columns='game_details', inplace=True)
         existing_table = pd.concat([existing_table, df])
+        existing_table.sort_values('game_year', ascending=False, inplace=True)
         existing_table.to_pickle('game_data.pickle.gz')
         browser.quit()
