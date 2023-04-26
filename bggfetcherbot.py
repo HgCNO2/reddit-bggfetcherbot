@@ -5,7 +5,6 @@ import json
 import pandas as pd
 from thefuzz import fuzz, process
 import datetime
-import numpy as np
 
 
 # Define logger
@@ -20,6 +19,19 @@ def find_closest_match(query, dataset):
     if closest_match[1] < 80:
         closest_match = process.extractOne(query, dataset, scorer=fuzz.token_set_ratio)
     return closest_match
+
+
+# Define lookup with years and modifiers
+def find_possible_matches(query: str, data_set: pd.DataFrame, year_query: float = None, modifier: str = None):
+    refined_data = data_set[data_set['game_title'].str.contains(query, regex=True, flags=re.I)]
+    if year_query and modifier:
+        if modifier == '+':
+            refined_data = refined_data[refined_data['game_year'] >= year_query]
+        elif modifier == '-':
+            refined_data = refined_data[refined_data['game_year'] <= year_query]
+    elif year_query and not modifier:
+        refined_data = refined_data[refined_data['game_year'] == year_query]
+    return refined_data['game_title']
 
 
 # Load authentication data
@@ -39,13 +51,17 @@ reddit = praw.Reddit(
 game_data = pd.read_pickle('game_data.pickle.gz')
 date_loaded = datetime.date.today()
 
-# Set subreddit
-test_subreddit = 'BGGFetcherBot'
-subreddits = ['boardgames']
-subreddit = reddit.subreddit("+".join(subreddits) + f'+{test_subreddit}')
+# Set subreddit for production
+subreddits = ['boardgames', 'soloboardgaming']
+subreddit = reddit.subreddit("+".join(subreddits))
+
+# Set subreddit for testing
+# subreddit = reddit.subreddit('BGGFetcherBot')
 
 # Compile Regex
 game_names_regex = re.compile(r'\\?\[\\?\[(.*?)\\?\]\\?\]')
+game_year_regex = re.compile(r'(.*)\\\|(\d{4})\\?([+-])?$')
+single_game_regex = re.compile(r'^(.*)\\\|')
 
 # Infinitely Loop comment stream
 while True:
@@ -61,15 +77,21 @@ while True:
                 for game_name in game_names:
                     # Strip extra whitespace & escape regex characters
                     game_query = re.escape(game_name.strip()).replace(r'\ ', ' ')
+                    year_query = None
+                    modifier = None
+                    # Look for year in call & extract year and modifier
+                    if re.match(game_year_regex, game_query):
+                        year_query = float(re.match(game_year_regex, game_query).groups()[1])
+                        modifier = re.match(game_year_regex, game_query).groups()[2]
+                    if "|" in game_query:
+                        game_query = re.match(single_game_regex, game_query).groups()[0].strip()
                     # Attempt to pull games that exactly match
-                    possible_matches = game_data[game_data['game_title'].str.contains(game_query, regex=True,
-                                                                                      flags=re.I)]['game_title']
+                    possible_matches = find_possible_matches(game_query, game_data, year_query, modifier)
                     if possible_matches.empty:
                         # Attempt to pull all games that match any word in the call
                         query = '(' + game_query + ')'
                         query = '|'.join(query.split(' '))
-                        possible_matches = game_data[game_data['game_title'].str.contains(query, flags=re.I, regex=True
-                                                                                          )]['game_title']
+                        possible_matches = find_possible_matches(query, game_data, year_query, modifier)
                     if not possible_matches.empty:
                         # Will run fuzzy matching on a small set of matches
                         closest_match = find_closest_match(game_query, possible_matches)
@@ -78,12 +100,12 @@ while True:
                         closest_match = find_closest_match(game_query, game_data['game_title'])
                     game_link = game_data[game_data['game_title'] == closest_match[0]]['url'].values[0]
                     game_year = game_data[game_data['game_title'] == closest_match[0]]['game_year'].values[0]
-                    if game_year == np.nan:
-                        game_year = ''
-                    else:
-                        game_year = f" ({game_year})"
+                    try:
+                        game_year = f" ({int(game_year)})"
+                    except ValueError:
+                        game_year = ""
                     reply_text += f"[{game_name} -> {closest_match[0]}{game_year}]({game_link})\n\n"
-                reply_text += '^^[[gamename]] ^^to ^^call'
+                reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call'
                 comment.reply(reply_text)
     except praw.exceptions.APIException as e:
         if "RATELIMIT" in str(e):

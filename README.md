@@ -2,6 +2,15 @@
 u/BGGFetcherBot is designed to reply to comments in r/boardgames if the comment includes game names in double brackets with links to the game on BoardGameGeek.com
 
 ## Changelog
+### v1.0.0
+Bot now able to parse year and modifiers added to call (Issue #7):
+
+	[[Everdell|2020]] will look for Everdell with release years of 2020.
+	[[Everdell|2020+]] will look for Everdell with release years of 2020 or later.
+	[[Everdell|2020-]] will look for Everdell with release years of 2020 or earlier.
+Bot being added to r/soloboardgaming
+
+Ordered data by game_year in descending order to improve exact matching to most recent publish date.
 ### v0.5.0
 Unescaped the spaces in the query for possible matches (Issue #9)
 
