@@ -98,8 +98,8 @@ while True:
                     else:
                         # Will fuzzy match against the entire database
                         closest_match = find_closest_match(game_query, game_data['game_title'])
-                    game_link = game_data[game_data['game_title'] == closest_match[0]]['url'].values[0]
-                    game_year = game_data[game_data['game_title'] == closest_match[0]]['game_year'].values[0]
+                    game_link = game_data.loc[closest_match[-1]]['url']
+                    game_year = game_data.loc[closest_match[-1]]['game_year']
                     try:
                         game_year = f" ({int(game_year)})"
                     except ValueError:
