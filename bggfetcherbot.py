@@ -5,6 +5,7 @@ import json
 import pandas as pd
 from thefuzz import fuzz, process
 import datetime
+from typing import Union
 
 
 # Define logger
@@ -22,7 +23,8 @@ def find_closest_match(query, dataset):
 
 
 # Define lookup with years and modifiers
-def find_possible_matches(query: str, data_set: pd.DataFrame, year_query=None, modifier: str = None):
+def find_possible_matches(query: str, data_set: pd.DataFrame, year_query: Union[float, tuple] = None, modifier: str =
+None):
     refined_data = data_set[data_set['game_title'].str.contains(query, regex=True, flags=re.I)]
     if year_query and modifier:
         if modifier == '+':
