@@ -2,6 +2,8 @@
 u/BGGFetcherBot is designed to reply to comments in r/boardgames if the comment includes game names in double brackets with links to the game on BoardGameGeek.com
 
 ## Changelog
+### v1.1.0
+Support for calling the bot with a year range instead of just modifiers
 ### v1.0.1
 Fixing call for game link using the index loc instead of the game name, to ensure the year and URL are specifically from the closest match. (Issue #14)
 ### v1.0.0

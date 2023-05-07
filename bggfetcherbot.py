@@ -22,7 +22,7 @@ def find_closest_match(query, dataset):
 
 
 # Define lookup with years and modifiers
-def find_possible_matches(query: str, data_set: pd.DataFrame, year_query: float = None, modifier: str = None):
+def find_possible_matches(query: str, data_set: pd.DataFrame, year_query=None, modifier: str = None):
     refined_data = data_set[data_set['game_title'].str.contains(query, regex=True, flags=re.I)]
     if year_query and modifier:
         if modifier == '+':
@@ -30,7 +30,11 @@ def find_possible_matches(query: str, data_set: pd.DataFrame, year_query: float 
         elif modifier == '-':
             refined_data = refined_data[refined_data['game_year'] <= year_query]
     elif year_query and not modifier:
-        refined_data = refined_data[refined_data['game_year'] == year_query]
+        if type(year_query) == tuple:
+            refined_data = refined_data[refined_data['game_year'].between(float(min(year_query)), float(max(
+                year_query)))]
+        else:
+            refined_data = refined_data[refined_data['game_year'] == year_query]
     return refined_data['game_title']
 
 
@@ -61,6 +65,7 @@ subreddit = reddit.subreddit("+".join(subreddits))
 # Compile Regex
 game_names_regex = re.compile(r'\\?\[\\?\[(.*?)\\?\]\\?\]')
 game_year_regex = re.compile(r'(.*)\\\|(\d{4})\\?([+-])?$')
+game_year_range_regex = re.compile(r'\\\|(\d{4})\\-(\d{4})$')
 single_game_regex = re.compile(r'^(.*)\\\|')
 
 # Infinitely Loop comment stream
@@ -83,6 +88,8 @@ while True:
                     if re.match(game_year_regex, game_query):
                         year_query = float(re.match(game_year_regex, game_query).groups()[1])
                         modifier = re.match(game_year_regex, game_query).groups()[2]
+                    elif re.search(game_year_range_regex, game_query):
+                        year_query = re.findall(game_year_range_regex, game_query)[0]
                     if "|" in game_query:
                         game_query = re.match(single_game_regex, game_query).groups()[0].strip()
                     # Attempt to pull games that exactly match
