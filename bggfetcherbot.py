@@ -82,6 +82,8 @@ while True:
             if game_names and comment.author.name != "BGGFetcherBot":
                 reply_text = ""
                 for game_name in game_names:
+                    if len(game_name) >= 200:
+                        continue
                     # Strip extra whitespace & escape regex characters
                     game_query = re.escape(game_name.strip()).replace(r'\ ', ' ')
                     year_query = None
@@ -114,8 +116,9 @@ while True:
                     except ValueError:
                         game_year = ""
                     reply_text += f"[{game_name} -> {closest_match[0]}{game_year}]({game_link})\n\n"
-                reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call'
-                comment.reply(reply_text)
+                if reply_text:
+                    reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call'
+                    comment.reply(reply_text)
     except praw.exceptions.APIException as e:
         if "RATELIMIT" in str(e):
             delay_time = re.search(r"(\d+) minutes?", str(e))
