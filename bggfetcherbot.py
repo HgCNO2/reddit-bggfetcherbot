@@ -83,7 +83,7 @@ while True:
             game_names = []
             if re.search(fetch_regex, comment.body, flags=re.I):
                 game_names.extend(re.findall(game_names_bold, comment.body))
-            elif re.search(game_names_regex, comment.body.replace('**', '')):
+            if re.search(game_names_regex, comment.body.replace('**', '')):
                 game_names.extend(re.findall(game_names_regex, comment.body.replace('**', '')))
             if game_names and comment.author.name != "BGGFetcherBot":
                 reply_text = ""
