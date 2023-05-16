@@ -31,7 +31,7 @@ def parse_sitemap(sitemap: str, **kwargs) -> "None | pd.DataFrame":
     if soup.select('sitemapindex'):
         sitemaps = pd.read_xml(content)
         for each_sitemap in sitemaps['loc'].tolist():
-            if re.search(r'_boardgame(expansion)?_', each_sitemap):
+            if re.search(r'_boardgame_', each_sitemap):
                 resp = requests.get(each_sitemap, **kwargs)
                 if resp.ok:
                     if resp.headers['Content-Type'] == 'application/x-gzip' or re.search(r'\.gz$', each_sitemap):
