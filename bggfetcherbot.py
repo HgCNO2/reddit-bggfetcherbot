@@ -87,6 +87,7 @@ while True:
                 game_names.extend(re.findall(game_names_regex, comment.body.replace('**', '')))
             if game_names and comment.author.name != "BGGFetcherBot":
                 reply_text = ""
+                game_names = list(dict.fromkeys(game_names))
                 for game_name in game_names:
                     if len(game_name) >= 200:
                         continue
