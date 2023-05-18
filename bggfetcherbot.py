@@ -3,7 +3,7 @@ import re
 import time
 import json
 import pandas as pd
-from thefuzz import fuzz, process
+from rapidfuzz import fuzz, process, distance
 import datetime
 from typing import Union
 
