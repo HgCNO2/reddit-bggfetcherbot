@@ -1,9 +1,19 @@
 # reddit-bggfetcherbot
-u/BGGFetcherBot is designed to reply to comments in r/boardgames if the comment includes game names in double brackets with links to the game on BoardGameGeek.com
+u/BGGFetcherBot is designed to reply to comments in r/boardgames and r/soloboardgaming if the comment includes game names in double brackets (or bold with a `!fetch` call in the comment body) with links to the game on BoardGameGeek.com.
 
 ## Changelog
-### v1.1.0
-Support for calling the bot with a year range instead of just modifiers
+### v2.0.0
+Adding support for `!fetch` with bold game names instead of double brackets.
+
+Adding support for calling the bot with a year range instead of just modifiers. (Issue #13)
+
+Game query must be 200 characters or less.
+
+Upgrading from TheFuzz to RapidFuzz for fuzzy matching.
+
+Fuzzy matching both with `JaroWinkler` and `ratio` then going with the winner. (Issue #14)
+
+Drop duplicate game IDs from the database. Apparently the boardgameexpansion links are all canonical to the boardgame equivalent.
 ### v1.0.1
 Fixing call for game link using the index loc instead of the game name, to ensure the year and URL are specifically from the closest match. (Issue #14)
 ### v1.0.0
