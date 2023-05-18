@@ -123,7 +123,8 @@ while True:
                         game_year = ""
                     reply_text += f"[{game_name} -> {closest_match[0]}{game_year}]({game_link})\n\n"
                 if reply_text:
-                    reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call'
+                    reply_text += '^^[[gamename]] ^^or ^^[[gamename|year]] ^^to ^^call\n\n'
+                    reply_text += '^^OR ^^**gamename** ^^or ^^**gamename|year** ^^+ ^^!fetch ^^to ^^call'
                     comment.reply(reply_text)
     except praw.exceptions.APIException as e:
         if "RATELIMIT" in str(e):
