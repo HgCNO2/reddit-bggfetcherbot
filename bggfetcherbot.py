@@ -16,10 +16,9 @@ def log_error(exception):
 
 # Define closest match logic function
 def find_closest_match(query, dataset):
-    closest_match = process.extractOne(query, dataset, scorer=fuzz.token_sort_ratio)
-    if closest_match[1] < 80:
-        closest_match = process.extractOne(query, dataset, scorer=fuzz.token_set_ratio)
-    return closest_match
+    jaro_match = process.extractOne(query, dataset, scorer=distance.JaroWinkler.similarity)
+    ratio_match = process.extractOne(query, dataset, scorer=fuzz.ratio)
+    return jaro_match if jaro_match[1] * 100 >= ratio_match[1] else ratio_match
 
 
 # Define lookup with years and modifiers
