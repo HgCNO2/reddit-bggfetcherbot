@@ -106,7 +106,7 @@ while True:
                     possible_matches = find_possible_matches(game_query, game_data, year_query, modifier)
                     if possible_matches.empty:
                         # Attempt to pull all games that match any word in the call
-                        query = '(' + game_query + ')'
+                        query = '(?:' + game_query + ')'
                         query = '|'.join(query.split(' '))
                         possible_matches = find_possible_matches(query, game_data, year_query, modifier)
                     if not possible_matches.empty:
