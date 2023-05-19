@@ -68,7 +68,7 @@ game_names_regex = re.compile(r'\\?\[\\?\[(.*?)\\?\]\\?\]')
 game_year_regex = re.compile(r'(.*)\\\|(\d{4})\\?([+-])?$')
 game_year_range_regex = re.compile(r'\\\|(\d{4})\\-(\d{4})$')
 single_game_regex = re.compile(r'^(.*)\\\|')
-fetch_regex = re.compile(r'!fetch')
+fetch_regex = re.compile(r'!fetch', flags=re.I)
 game_names_bold = re.compile(r'\*\*(.*)\*\*')
 
 # Infinitely Loop comment stream
@@ -80,7 +80,7 @@ while True:
                 game_data = pd.read_pickle('game_data.pickle.gz')
                 date_loaded = datetime.date.today()
             game_names = []
-            if re.search(fetch_regex, comment.body, flags=re.I):
+            if re.search(fetch_regex, comment.body):
                 game_names.extend(re.findall(game_names_bold, comment.body))
             if re.search(game_names_regex, comment.body.replace('**', '')):
                 game_names.extend(re.findall(game_names_regex, comment.body.replace('**', '')))
