@@ -90,6 +90,11 @@ while True:
                 for game_name in game_names:
                     if len(game_name) >= 200 or game_name == '!fetch':
                         continue
+                    # Remove duplicate instances of games with bolded double brackets
+                    if re.search(game_names_regex, game_name):
+                        game_name = re.findall(game_names_regex, game_name)[0]
+                        if game_name in game_names:
+                            continue
                     # Strip extra whitespace & escape regex characters
                     game_query = re.escape(game_name.strip()).replace(r'\ ', ' ')
                     year_query = None
