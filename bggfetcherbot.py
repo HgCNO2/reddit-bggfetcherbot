@@ -69,7 +69,7 @@ game_year_regex = re.compile(r'(.*)\\\|(\d{4})\\?([+-])?$')
 game_year_range_regex = re.compile(r'\\\|(\d{4})\\-(\d{4})$')
 single_game_regex = re.compile(r'^(.*)\\\|')
 fetch_regex = re.compile(r'!fetch', flags=re.I)
-game_names_bold = re.compile(r'\*\*(.*)\*\*')
+game_names_bold = re.compile(r'\*\*(.+?)\*\*')
 
 # Infinitely Loop comment stream
 while True:
