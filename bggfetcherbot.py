@@ -88,7 +88,7 @@ while True:
                 reply_text = ""
                 game_names = list(dict.fromkeys(game_names))
                 for game_name in game_names:
-                    if len(game_name) >= 200:
+                    if len(game_name) >= 200 or game_name == '!fetch':
                         continue
                     # Strip extra whitespace & escape regex characters
                     game_query = re.escape(game_name.strip()).replace(r'\ ', ' ')
