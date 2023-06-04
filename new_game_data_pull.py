@@ -31,7 +31,7 @@ def parse_sitemap(sitemap: str, **kwargs) -> "None | pd.DataFrame":
     if soup.select('sitemapindex'):
         sitemaps = pd.read_xml(content)
         for each_sitemap in sitemaps['loc'].tolist():
-            if re.search(r'_boardgame(expansion)?_', each_sitemap):
+            if re.search(r'_boardgame_', each_sitemap):
                 resp = requests.get(each_sitemap, **kwargs)
                 if resp.ok:
                     if resp.headers['Content-Type'] == 'application/x-gzip' or re.search(r'\.gz$', each_sitemap):
@@ -117,5 +117,6 @@ if not new_entries.empty:
         df.drop(columns='game_details', inplace=True)
         existing_table = pd.concat([existing_table, df])
         existing_table.sort_values('game_year', ascending=False, inplace=True)
+        existing_table.reset_index(drop=True, inplace=True)
         existing_table.to_pickle('game_data.pickle.gz')
         browser.quit()
