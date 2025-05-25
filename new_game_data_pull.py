@@ -1,19 +1,13 @@
+import gzip
+import re
+from collections import defaultdict
+from time import sleep
+
 import pandas as pd
 import numpy as np
 from lxml.etree import XMLSyntaxError
 from bs4 import BeautifulSoup
 import requests
-import gzip
-import re
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from webdriver_manager.firefox import GeckoDriverManager
-import math
 
 
 # Define Reliable Sitemap Parser
@@ -54,69 +48,75 @@ def parse_sitemap(sitemap: str, **kwargs) -> "None | pd.DataFrame":
     return urls
 
 
-# Define Game Data Scrape Function
-def retrieve_game_data(browser, url):
-    try:
-        browser.get(url)
-        WebDriverWait(browser, 4).until(
-            EC.presence_of_element_located((By.XPATH, "//h1/a"))
-        )
-    except TimeoutException:
-        return np.nan, np.nan
-    try:
-        # extract the text from the specified xpaths
-        game_title = browser.find_element(By.XPATH, '//h1/a').text.strip()
-    except NoSuchElementException:
-        game_title = np.nan
-    try:
-        game_year = browser.find_element(By.XPATH, '//h1/span').text.strip()
-    except NoSuchElementException:
-        game_year = np.nan
-    return game_title, game_year
-
-
 # Pull all board game URLS
 live_urls = parse_sitemap('https://boardgamegeek.com/sitemapindex')[['loc']]
 live_urls.rename(columns={'loc': 'url'}, inplace=True)
+live_urls['game_id'] = live_urls['url'].str.extract(r'/boardgame/(\d+)/')
 
 # Pull existing game URLs into a DataFrame
-existing_table = pd.read_pickle('game_data.pickle.gz')\
-    .dropna(subset="game_title")
+existing_table = pd.read_pickle('game_data.pickle.gz').dropna(subset="game_title")
 
 # Pull out just newly discovered URLS and crawl for title and year
-new_entries = pd.concat([live_urls, existing_table])\
-    .drop_duplicates(subset='url', keep=False)
+new_entries = pd.concat([live_urls, existing_table]).drop_duplicates(subset='game_id', keep=False)
+
+# Set up defaultdict to build dataframe
+game_data = defaultdict(list)
 
 # crawl new_entries urls for title and year, push update to gzipped pickle file.
 if not new_entries.empty:
-    entries_split = np.array_split(new_entries, math.ceil(len(new_entries) / 250))
-    try:
-        firefox_service = FirefoxService(GeckoDriverManager(path='driver').install())
-    except ValueError:
-        firefox_service = FirefoxService(r'driver/geckodriver')
-    for df in entries_split:
-        options = Options()
-        options.add_argument('-headless')
-        options.add_argument("start-maximized")
-        options.add_argument("disable-infobars")
-        options.add_argument("--disable-extensions")
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-application-cache')
-        options.add_argument('--disable-gpu')
-        options.add_argument("--disable-dev-shm-usage")
-        with open('binary.txt', 'r') as f:  # Comment out for local run
-            options.binary_location = f.read()  # Comment out for local run
-        browser = webdriver.Firefox(options=options, service=firefox_service)
-        df['game_details'] = df.apply(lambda row: retrieve_game_data(browser, row['url']), axis=1)
-        df['game_title'] = df['game_details'].apply(lambda row: row[0])
-        df['game_year'] = df['game_details'].apply(lambda row: row[1])
+    # Initiate retry counter
+    retry_counter = 0
+
+    for i, row in new_entries.iterrows():
+        if retry_counter >= 35:
+            print("Too many retries.")
+            break
+        print(f"Row {i} of {len(new_entries)}")
+        resp = requests.get(f"https://api.geekdo.com/api/market/products?ajax=1&nosession=1&"
+                            f"objectid={row['game_id']}"
+                            f"&objecttype=thing&pageid=1&showcount=1&stock=instock")
+
+        # To mitigate stoppage from rate limits or server errors, sleep then move on.
         try:
-            df['game_year'] = df['game_year'].str.replace(r'\(|\)', '', regex=True).astype(float)
-        except AttributeError:
-            pass
-        df.drop(columns='game_details', inplace=True)
-        existing_table = pd.concat([existing_table, df])
-        existing_table.sort_values('game_year', ascending=False, inplace=True)
-        existing_table.reset_index(drop=True, inplace=True)
-        existing_table.to_pickle('game_data.pickle.gz')
-        browser.quit()
+            resp.raise_for_status()
+        except requests.HTTPError:
+            if resp.status_code == 429:
+                print(resp.status_code)
+                sleep(60 * 20)  # Sleep for 20 minutes for every 429
+                continue
+            else:
+                print(resp.status_code)
+                retry_counter += 1
+                sleep(60)
+                continue
+
+        try:
+            json_resp = resp.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"JSON decoder failed for game_id {row['game_id']}.")
+            sleep(15)
+            continue
+
+        # Get game_year
+        game_year = np.nan
+        for item in json_resp.get('linkeditem').get('descriptors'):
+            if item.get('name') == "yearpublished":
+                game_year = float(item.get('displayValue'))
+
+        # Get game_title
+        game_title = json_resp.get('linkeditem').get('name')
+
+        # Append data
+        game_data['url'].append(row['url'])
+        game_data['game_id'].append(row['game_id'])
+        game_data['game_title'].append(game_title)
+        game_data['game_year'].append(game_year)
+
+    # Create game_data DataFrame
+    game_data_df = pd.DataFrame(game_data)
+
+    # Build existing table and push to database
+    existing_table = pd.concat([existing_table, game_data_df])
+    existing_table.sort_values('game_year', ascending=False, inplace=True)
+    existing_table.reset_index(drop=True, inplace=True)
+    existing_table.to_pickle('game_data.pickle.gz')
